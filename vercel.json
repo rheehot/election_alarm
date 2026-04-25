@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/check-board",
+      "schedule": "0 8 * * *"
+    }
+  ]
+}
