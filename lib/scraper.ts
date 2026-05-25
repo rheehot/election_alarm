@@ -1,12 +1,12 @@
 import * as cheerio from 'cheerio';
-import { BOARD_BASE_URL, TARGET_KEYWORD, USER_AGENT, MAX_PAGES, log, isValidYear, extractYear } from './constants';
+import { BOARD_BASE_URL, TARGET_KEYWORD, USER_AGENT, MAX_PAGES, log } from './constants';
 import type { BoardPost } from '@/types';
 
 /**
- * 단일 페이지 스크래핑
+ * 단일 페이지 스크래핑 (blog.naver.com 검색 결과)
  */
 async function scrapePage(pageIndex: number): Promise<BoardPost[]> {
-  const url = `${BOARD_BASE_URL}&pageIndex=${pageIndex}`;
+  const url = `${BOARD_BASE_URL}&pageNo=${pageIndex}`;
 
   try {
     log('INFO', `페이지 스크래핑 시작: ${pageIndex}`, { url });
@@ -27,58 +27,40 @@ async function scrapePage(pageIndex: number): Promise<BoardPost[]> {
 
     const posts: BoardPost[] = [];
 
-    // 실제 게시판 구조: sd_list_box 내의 ul > li
-    $('.sd_list_box ul li, .board_list ul li').each((_idx, element) => {
+    // blog.naver.com 검색 결과 구조: .search_list > li
+    $('.search_list li, .list_search_post li').each((_idx, element) => {
       try {
         const $el = $(element);
 
         // 제목과 링크 추출
-        const titleEl = $el.find('a[href*="nttId"]').first();
+        const titleEl = $el.find('a.title, .title a, h3 a, h4 a').first();
         const title = titleEl.text().trim();
         let href = titleEl.attr('href') || '';
 
         if (href && !href.startsWith('http')) {
-          // jsessionid 제거 (불필요한 세션 ID)
-          href = href.split(';')[0];
-
-          // 상대 경로를 절대 경로로 변환
-          if (href.startsWith('/')) {
-            href = `https://su.nec.go.kr${href}`;
-          } else {
-            href = new URL(href, BOARD_BASE_URL).href;
-          }
+          href = `https://blog.naver.com${href}`;
         }
 
-        // ID 추출 (nttId 파라미터)
-        const idMatch = href.match(/nttId=(\d+)/);
+        // ID 추출 (logNo 파라미터 또는 URL)
+        const idMatch = href.match(/logNo=(\d+)/);
         const id = idMatch ? idMatch[1] : href;
 
-        // 작성자 추출 (링크 근처의 텍스트)
-        // 보통 [지역명] 형식으로 되어 있음
-        const regionMatch = title.match(/^\[([^\]]+)\]/);
-        const author = regionMatch ? regionMatch[1] : '관리자';
+        // 블로그 이름/작성자 추출
+        const authorEl = $el.find('.author, .writer, .blog_name, .name').first();
+        const author = authorEl.text().trim() || '블로그';
 
-        // 작성일 추출 - li 내의 span.date 또는 별도 날짜 요소
-        const dateEl = $el.find('.date, span.date, time').first();
+        // 작성일 추출
+        const dateEl = $el.find('.date, .time, .publish').first();
         let date = dateEl.text().trim();
 
-        // 날짜가 없으면 li 전체 텍스트에서 찾기
+        // 날짜가 없으면 현재 날짜 사용
         if (!date) {
-          const textContent = $el.text();
-          const dateMatch = textContent.match(/(\d{4}\.\d{1,2}\.\d{1,2})/);
-          date = dateMatch ? dateMatch[1] : '';
-        }
-
-        // 날짜가 비어있으면 스킵
-        if (!date) {
-          // 날짜가 없으면 최신 것으로 간주하고 기본값 사용
           date = new Date().toISOString().split('T')[0];
         }
 
-        // 2024~2026년 범위만 체크
-        if (!isValidYear(date)) {
-          return; // 범위 밖이면 스킵
-        }
+        // 요약/설명 추출
+        const descEl = $el.find('.desc, .summary, p').first();
+        const desc = descEl.text().trim();
 
         if (title && href && id) {
           posts.push({ id, title, url: href, author, date });
@@ -97,7 +79,7 @@ async function scrapePage(pageIndex: number): Promise<BoardPost[]> {
 }
 
 /**
- * 게시판 HTML을 파싱하여 게시물 목록 추출 (여러 페이지)
+ * blog.naver.com 검색 결과 HTML을 파싱하여 게시물 목록 추출 (여러 페이지)
  */
 export async function scrapeBoard(): Promise<BoardPost[]> {
   const allPosts: BoardPost[] = [];
@@ -123,28 +105,10 @@ export async function scrapeBoard(): Promise<BoardPost[]> {
 }
 
 /**
- * 키워드로 게시물 필터링
+ * 키워드로 게시물 필터링 (검색 결과이므로 필터링 불필요, 그대로 반환)
  */
 export function filterByKeyword(posts: BoardPost[], keyword: string = TARGET_KEYWORD): BoardPost[] {
-  const filtered = posts.filter(post =>
-    post.title.includes(keyword)
-  );
-
-  log('INFO', `키워드 필터링: ${posts.length}개 → ${filtered.length}개`, { keyword });
-  return filtered;
-}
-
-/**
- * 날짜 포맷 정규화
- */
-export function normalizeDate(dateString: string): string {
-  const year = extractYear(dateString);
-  if (year === null) return dateString;
-
-  // 연도가 포함되어 있지 않으면 추가
-  if (!dateString.match(/^\d{4}/)) {
-    return `${year}.${dateString}`;
-  }
-
-  return dateString;
+  // blog.naver.com 검색 결과는 이미 키워드로 필터링됨
+  log('INFO', `검색 결과 반환: ${posts.length}개 게시물`, { keyword });
+  return posts;
 }

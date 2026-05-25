@@ -1,8 +1,8 @@
-// 게시판 URL (기본 URL, 페이지 파라미터는 별도 추가)
-export const BOARD_BASE_URL = 'https://su.nec.go.kr/su/bbs/B0000265/list.do?menuNo=200065&category1=su&category2=jg&deleteCd=0';
+// blog.naver.com 검색 URL (기본 URL, 페이지 파라미터는 별도 추가)
+export const BOARD_BASE_URL = 'https://section.blog.naver.com/Search/Post.naver?rangeType=ALL&orderBy=sim&keyword=이벤트';
 
 // 검색 키워드
-export const TARGET_KEYWORD = '참관인';
+export const TARGET_KEYWORD = '이벤트';
 
 // 체크할 최대 페이지 수
 export const MAX_PAGES = 5;

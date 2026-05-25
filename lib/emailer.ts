@@ -27,8 +27,8 @@ export async function sendAlertEmail(post: BoardPost): Promise<{ success: boolea
 
     const subject = `${EMAIL_CONFIG.SUBJECT_PREFIX} ${post.title}`;
     const html = `
-      <h2>선관위 게시판 알림</h2>
-      <p>"참관인" 키워드가 포함된 새로운 게시물이 게시되었습니다.</p>
+      <h2>네이버 블로그 검색 알림</h2>
+      <p>"이벤트" 키워드로 검색된 새로운 블로그 포스트가 발견되었습니다.</p>
 
       <table border="1" cellpadding="10" cellspacing="0" style="border-collapse: collapse;">
         <tr>
@@ -36,7 +36,7 @@ export async function sendAlertEmail(post: BoardPost): Promise<{ success: boolea
           <td>${post.title}</td>
         </tr>
         <tr>
-          <td><strong>작성자</strong></td>
+          <td><strong>블로그</strong></td>
           <td>${post.author}</td>
         </tr>
         <tr>
@@ -45,7 +45,7 @@ export async function sendAlertEmail(post: BoardPost): Promise<{ success: boolea
         </tr>
         <tr>
           <td><strong>링크</strong></td>
-          <td><a href="${post.url}">게시물 보기</a></td>
+          <td><a href="${post.url}">포스트 보기</a></td>
         </tr>
       </table>
 
@@ -110,33 +110,33 @@ export async function sendStatusReport(
       weekday: 'long',
     });
 
-    // 최근 게시물 3개 표시
+    // 최근 포스트 표시
     const recentPostsHTML = totalCount > 0
       ? `
-        <h3>📋 최신 공지사항</h3>
-        <p>최근 게시된 공지사항입니다:</p>
+        <h3>📋 최신 블로그 포스트</h3>
+        <p>최근 검색된 포스트입니다:</p>
         <ul>
-          <li>선관위 홈페이지에서 확인 가능</li>
+          <li>네이버 블로그에서 확인 가능</li>
         </ul>
       `
       : '';
 
     const keywordStatus = filteredCount > 0
-      ? `<p style="color: #e74c3c;">⚠️ 현재 "참관인" 관련 공지 <strong>${filteredCount}건</strong> 존재</p>`
-      : `<p style="color: #27ae60;">✅ 현재 "참관인" 관련 공지 없음</p>`;
+      ? `<p style="color: #e74c3c;">⚠️ 현재 "이벤트" 관련 포스트 <strong>${filteredCount}건</strong> 검색됨</p>`
+      : `<p style="color: #27ae60;">✅ 현재 "이벤트" 관련 포스트 없음</p>`;
 
     const html = `
-      <h2>선관위 게시판 확인 결과</h2>
+      <h2>네이버 블로그 검색 확인 결과</h2>
       <p><strong>날짜:</strong> ${today}</p>
       <p><strong>확인 시간:</strong> 매일 아침 9시</p>
 
       <table border="1" cellpadding="10" cellspacing="0" style="border-collapse: collapse; margin: 20px 0;">
         <tr>
-          <td><strong>전체 게시물</strong></td>
+          <td><strong>전체 포스트</strong></td>
           <td>${totalCount}개</td>
         </tr>
         <tr>
-          <td><strong>"참관인" 포함</strong></td>
+          <td><strong>"이벤트" 포함</strong></td>
           <td>${filteredCount}개</td>
         </tr>
         <tr>
