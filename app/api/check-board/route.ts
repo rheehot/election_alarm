@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { scrapeBoard } from '@/lib/scraper';
 import { isProcessed, markAsProcessed, updateLastRun } from '@/lib/storage';
-// import { sendStatusReport, sendErrorAlert } from '@/lib/emailer'; // 이메일 발송 비활성화
 import type { CheckBoardResponse } from '@/types';
 
 /**
@@ -26,12 +25,11 @@ export async function GET(): Promise<NextResponse<CheckBoardResponse>> {
     const newPostsResults = await Promise.all(newPostsPromises);
     const newPosts = newPostsResults.filter((post): post is NonNullable<typeof post> => post !== null);
 
-    // 3. 이메일 발송 비활성화 (사용자 요청으로 중지)
-    let emailsSent = 0;
-    let errors = 0;
+    // 3. 이메일 발송 기능 완전 제거 (사용자 요청으로 중단)
+    const emailsSent = 0;
+    const errors = 0;
 
-    // await sendStatusReport(allPosts.length, allPosts.length, newPosts.length);
-    // emailsSent = 1;
+    console.log(`[Check-Board] 이메일 발송 중단됨 - 검색만 수행`);
 
     // 신규 포스트가 있으면 처리 완료 표시
     if (newPosts.length > 0) {
@@ -64,13 +62,8 @@ export async function GET(): Promise<NextResponse<CheckBoardResponse>> {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
-    // 에러 발생 시 알림 (이메일 발송 비활성화)
-    if (error instanceof Error) {
-      // sendErrorAlert(error, '블로그 검색 확인').catch(err =>
-      //   console.error('에러 알림 발송 실패:', err)
-      // );
-      console.error('에러 발생:', error.message);
-    }
+    // 에러 로그만 출력 (이메일 발송 제거)
+    console.error('[Check-Board] 에러 발생:', error.message);
 
     const response: CheckBoardResponse = {
       success: false,
