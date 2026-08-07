@@ -72,3 +72,6 @@ npm start
 ## 📄 라이선스
 
 MIT
+
+---
+_Last updated: 2026-08-08_
