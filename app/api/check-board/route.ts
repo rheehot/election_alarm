@@ -63,7 +63,7 @@ export async function GET(): Promise<NextResponse<CheckBoardResponse>> {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
     // 에러 로그만 출력 (이메일 발송 제거)
-    console.error('[Check-Board] 에러 발생:', error.message);
+    console.error('[Check-Board] 에러 발생:', errorMessage);
 
     const response: CheckBoardResponse = {
       success: false,
